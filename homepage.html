@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meier Chen | AI & Software Engineer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;600&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #010101;
+            --accent: #00f2ff;
+            --star: #ffd700;
+            --text-main: #ffffff;
+            --text-dim: #999999;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        /* star background & set */
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; cursor: none; } 
+        body { background-color: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+
+        #canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        #cursor-stars { pointer-events: none; position: fixed; top: 0; left: 0; z-index: 9999; }
+
+        nav { position: fixed; top: 0; width: 100%; padding: 20px 0; backdrop-filter: blur(15px); z-index: 1000; border-bottom: 1px solid var(--border); }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne'; font-weight: 800; letter-spacing: 4px; font-size: 14px; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { text-decoration: none; color: var(--text-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        .hero { height: 85vh; display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 40px; border: none !important; }
+        .hero-content h1 { font-family: 'Syne'; font-size: clamp(40px, 7vw, 90px); line-height: 0.9; text-transform: uppercase; margin-bottom: 20px; }
+        .hero-content h1 span { color: transparent; -webkit-text-stroke: 1px var(--accent); display: block; }
+        .hero-content p { color: var(--text-dim); line-height: 1.6; max-width: 400px; font-size: 15px; }
+
+        /* GitHub Action Style */
+        .hero-actions { margin-top: 30px; display: flex; gap: 20px; }
+        .github-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            padding: 8px 0;
+            border-bottom: 1px solid transparent;
+            transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .github-btn:hover { color: var(--accent); border-color: var(--accent); transform: translateX(5px); }
+        .github-icon { width: 18px; height: 18px; fill: currentColor; }
+
+        /* 3D image */
+        .photo-card-3d {
+            width: 100%;
+            aspect-ratio: 4/5;
+            perspective: 1000px;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .photo-card-3d:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .card-front img { width: 100%; height: 100%; object-fit: cover; }
+        .card-back {
+            background: linear-gradient(135deg, #050505 0%, #111 100%);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .card-back h3 { font-family: 'Space Grotesk'; color: var(--star); font-size: 18px; text-shadow: 0 0 15px rgba(255,215,0,0.5); }
+        .card-back p { font-size: 10px; color: var(--text-dim); margin-top: 10px; letter-spacing: 2px; }
+
+        /* Section */
+        section { padding: 40px 0; border-top: 1px solid var(--border); }
+        .tag { font-size: 9px; letter-spacing: 4px; color: var(--accent); text-transform: uppercase; margin-bottom: 25px; display: block; }
+
+        /* Skills */
+        .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .skill-item { padding: 25px; border: 1px solid transparent; transition: 0.3s; }
+        .skill-item:hover { border-color: var(--accent); background: rgba(0,242,255,0.02); }
+        .skill-item h5 { font-family: 'Syne'; font-size: 12px; margin-bottom: 15px; }
+        .skill-item li { list-style: none; font-size: 13px; color: var(--text-dim); line-height: 2; }
+
+        /* Projects & Papers */
+        .list-row { display: grid; grid-template-columns: 50px 1fr 2fr; gap: 20px; padding: 30px 0; border-bottom: 1px solid var(--border); transition: 0.4s; text-decoration: none; color: inherit; }
+        .list-row:hover { padding-left: 15px; background: rgba(255,255,255,0.02); border-color: var(--accent); }
+        
+        .paper-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .paper-box { padding: 30px; border: 1px solid var(--border); text-decoration: none; color: inherit; transition: 0.4s; }
+        .paper-box:hover { border-color: var(--star); transform: translateY(-5px); }
+        .paper-box h6 { font-size: 16px; margin-bottom: 10px; }
+        .paper-box p { font-size: 13px; color: var(--text-dim); }
+
+        /* Footer */
+        footer { padding: 80px 0; text-align: center; }
+        .footer-mail { font-size: 24px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--accent); font-family: 'Space Grotesk'; }
+        .footer-links { margin-top: 30px; display: flex; justify-content: center; gap: 40px; }
+        .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 12px; letter-spacing: 1px; transition: 0.3s; }
+        .footer-links a:hover { color: var(--text-main); }
+
+        @media (max-width: 850px) {
+            .hero, .skills-grid, .paper-grid { grid-template-columns: 1fr; }
+            .list-row { grid-template-columns: 40px 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor-stars"></div>
+    <canvas id="canvas-bg"></canvas>
+
+    <nav>
+        <div class="container nav-content">
+            <div class="logo">MEIER.Chen</div>
+            <div class="nav-links">
+                <a href="#projects">Work</a>
+                <a href="#skills">Skills</a>
+                <a href="#paper">Paper</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="hero" id="about">
+            <div class="hero-content">
+                <span class="tag">software and AI Engineer</span>
+                <h1>Meier <span>Chen</span></h1>
+                <p>Master of Computer Science at UC Irvine. Software Engineer with full-stack experience building scalable, high-performance web applications. Proficient in Java, JavaScript, and Python, with expertise in React, RESTful APIs, and AWS. Experienced in developing production-level systems, optimizing database performance (50%+ latency reduction), and improving workflows by 40%. Skilled in maintainable code, responsive UI/UX, and scalable backend development using Flask and FastAPI, with strong foundations in modular design and collaborative development.</p>
+                
+                <div class="hero-actions">
+                    <a href="https://github.com/Alice-Chen37" target="_blank" class="github-btn">
+                        <svg viewBox="0 0 24 24" class="github-icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                        <span>GitHub // @Alice-Chen37</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="photo-card-3d">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <img src="me.jpg" alt="Meier Chen">
+                    </div>
+                    <div class="card-back">
+                        <span style="font-size: 40px; margin-bottom: 20px;">✦</span>
+                        <h3>meierc1@uci.edu</h3>
+                        <p>Contact</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills">
+            <span class="tag">Expertise</span>
+            <div class="skills-grid">
+                <div class="skill-item">
+                    <h5>LANGUAGES</h5>
+                    <li>Python</li>
+                    <li>JavaScript / HTML / CSS</li>
+                    <li>SQL</li>
+                </div>
+                <div class="skill-item">
+                    <h5>Full Stack</h5>
+                    <li>FastAPI / REST APIs/ Node.js</li>
+                    <li>React / Next.js</li>
+                    <li>Figma / UI/ Git</li>
+                    <li>AWS / DynamoDB</li>
+                </div>
+                <div class="skill-item">
+                    <h5>AI / Machine Learning</h5>
+                    <li>OpenAI API / RAG</li>
+                    <li>PyTorch / TensorFlow</li>
+                    <li>Data Visualization(2D&3D)/ Data Processing</li>
+                    <li>Model Evaluation</li>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects">
+            <span class="tag">Selected Work</span>
+            
+            <div class="list-row">
+                <div style="color:var(--accent)">01</div>
+                <div><strong>AI Plant Shopping App</strong></div>
+                <div style="color:var(--text-dim)">React-based e-commerce with GPT-powered plant care and natural language search.</div>
+            </div>
+
+            <div class="list-row">
+                <div style="color:var(--accent)">02</div>
+                <div><strong>Customer Analytics & RAG</strong></div>
+                <div style="color:var(--text-dim)">ML-driven segmentation and FAISS-based semantic search for real-time contextual insights.</div>
+            </div>
+
+            <div class="list-row">
+                <div style="color:var(--accent)">03</div>
+                <div><strong>AI Data Pipeline</strong></div>
+                <div style="color:var(--text-dim)">End-to-end ETL and RAG system for SQL/CSV querying using LLM and vector retrieval.</div>
+            </div>
+
+            <div class="list-row">
+                <div style="color:var(--accent)">04</div>
+                <div><strong>AI Mental Health App</strong></div>
+                <div style="color:var(--text-dim)">Accessible support platform featuring real-time AI emotional analysis and personalized feedback.</div>
+            </div>
+
+            <div class="list-row">
+                <div style="color:var(--accent)">05</div>
+                <div><strong>Cloud Clothing Store</strong></div>
+                <div style="color:var(--text-dim)">Production-ready React platform integrated with scalable AWS backend services.</div>
+            </div>
+
+            <div class="list-row">
+                <div style="color:var(--accent)">06</div>
+                <div><strong>Emotion Analysis App</strong></div>
+                <div style="color:var(--text-dim)">Real-time OpenCV application for facial expression recognition and stress-level metrics.</div>
+            </div>
+
+            <div class="list-row">
+                <div style="color:var(--accent)">07</div>
+                <div><strong>3D Weather Visualization</strong></div>
+                <div style="color:var(--text-dim)">High-resolution volumetric simulations and vector field rendering using ParaView.</div>
+            </div>
+        </section>
+
+        <section id="paper">
+            <span class="tag">Publications</span>
+            <div class="paper-grid">
+                <a href="https://ieeexplore.ieee.org/document/10498295" target="_blank" class="paper-box">
+                    <h6>Application of Machine Learning Algorithms in Computer Data Remote Backup System</h6>
+                    <p>ML optimization for data redundancy.</p>
+                </a>
+                <a href="https://www.fse-journal.org/download/FSE-1-3-93-96.pdf" target="_blank" class="paper-box">
+                    <h6>Learned Sketch and Iterative Hessian Sketch in Linear Algebra</h6>
+                    <p>Linear Algebra & Matrix Operations.</p>
+                </a>
+            </div>
+        </section>
+
+        <footer id="contact">
+            <a href="mailto:meierc1@uci.edu" class="footer-mail">meierc1@uci.edu</a>
+            <div class="footer-links">
+                <a href="https://linkedin.com/in/meier-chen" target="_blank">LINKEDIN </a>
+                <a href="tel:9492546503"> (949) 254-6503</a>
+            </div>
+            <p style="margin-top: 50px; font-size: 9px; color: #222; letter-spacing: 3px;">DESIGNED BY AI // 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        //星星鼠标
+        const starContainer = document.getElementById('cursor-stars');
+        document.addEventListener('mousemove', (e) => {
+            const star = document.createElement('div');
+            star.innerHTML = '✦';
+            star.style.cssText = `
+                position: fixed; left: ${e.clientX}px; top: ${e.clientY}px;
+                color: #ffd700; font-size: ${Math.random()*15+10}px;
+                pointer-events: none; transition: 0.8s; z-index: 9999; opacity: 1;
+            `;
+            starContainer.appendChild(star);
+            setTimeout(() => {
+                star.style.transform = `translate(${(Math.random()-0.5)*100}px, ${(Math.random()-0.5)*100}px) scale(0)`;
+                star.style.opacity = '0';
+            }, 50);
+            setTimeout(() => star.remove(), 800);
+        });
+
+        // background
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let dots = [];
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        for(let i=0; i<100; i++) {
+            dots.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.5, speed: Math.random()*0.5 });
+        }
+
+        function draw() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(0, 242, 255, 0.2)";
+            dots.forEach(d => {
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
+                ctx.fill();
+                d.y -= d.speed;
+                if(d.y < 0) d.y = canvas.height;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>
